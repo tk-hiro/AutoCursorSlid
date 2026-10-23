@@ -63,7 +63,7 @@ public sealed class AppSettings : ObservableObject
         HoldLeftButton: HoldLeftButton,
         ClickMethod: ClickMethod,
         KeepPressed: KeepPressed,
-        SpeedPxPerSec: Math.Clamp(SpeedPxPerSec, 50, 30000),
+        SpeedPxPerSec: Math.Clamp(SpeedPxPerSec, 50, 50000),
         Spacing: Math.Clamp(Spacing, 3, 500),
         DetergentEnabled: DetergentEnabled,
         DetergentIntervalSec: Math.Max(0.2, DetergentIntervalSec),
