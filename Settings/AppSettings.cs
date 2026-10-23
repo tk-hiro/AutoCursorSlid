@@ -6,6 +6,9 @@ namespace DishAuto.Settings;
 /// <summary>画面で編集し、JSON に保存する設定。</summary>
 public sealed class AppSettings : ObservableObject
 {
+    // 押している時間が1フレーム（60fps で約17ms）を下回らない下限
+    public const double MinDetergentIntervalSec = 0.05;
+
     private int _regionX, _regionY, _regionWidth, _regionHeight;
     private RegionShape _shape = RegionShape.Ellipse;
     private PatternKind _pattern = PatternKind.ZigzagHorizontal;
@@ -66,7 +69,7 @@ public sealed class AppSettings : ObservableObject
         SpeedPxPerSec: Math.Clamp(SpeedPxPerSec, 50, 50000),
         Spacing: Math.Clamp(Spacing, 3, 500),
         DetergentEnabled: DetergentEnabled,
-        DetergentIntervalSec: Math.Max(0.2, DetergentIntervalSec),
+        DetergentIntervalSec: Math.Max(MinDetergentIntervalSec, DetergentIntervalSec),
         RepressIntervalSec: Math.Max(0, RepressIntervalSec),
         TimeLimitSec: Math.Max(0, TimeLimitSec),
         CountdownSec: Math.Clamp(CountdownSec, 0, 60),

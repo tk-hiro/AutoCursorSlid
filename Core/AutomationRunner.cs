@@ -13,7 +13,7 @@ public sealed class AutomationRunner(RunConfig config)
     private const double TickMs = 1.0;                 // 入力を送る間隔の目安
     private const double MaxCatchUpMs = 20.0;          // 処理が遅れたときに早送りで取り戻す上限
     private const double MouseMovedThresholdPx = 60.0; // これ以上ずれたら手で動かされたとみなす
-    private const double SpaceHoldMs = 50.0;
+    private const double SpaceHoldMs = 50.0;           // 間隔が短いときは間隔の半分まで縮める
     private const int RepressGapMs = 30;
     private const double KeepPressedIntervalMs = 100.0;
     private const double ForegroundCaptureDelayMs = 150.0;
@@ -211,7 +211,7 @@ public sealed class AutomationRunner(RunConfig config)
             if (now >= _nextDetergentMs)
             {
                 InputSender.SpaceDown();
-                _spaceReleaseMs = now + SpaceHoldMs;
+                _spaceReleaseMs = now + Math.Min(SpaceHoldMs, config.DetergentIntervalSec * 1000 / 2);
                 _nextDetergentMs = now + config.DetergentIntervalSec * 1000;
             }
         }

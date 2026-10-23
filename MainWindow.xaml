@@ -115,7 +115,7 @@
                 <CheckBox Content="スペースを押す" IsChecked="{Binding Settings.DetergentEnabled}" />
                 <TextBox Text="{Binding Settings.DetergentIntervalSec, UpdateSourceTrigger=PropertyChanged}"
                          IsEnabled="{Binding Settings.DetergentEnabled}" />
-                <TextBlock Text="秒ごと" VerticalAlignment="Center" />
+                <TextBlock Text="秒ごと（最短 0.05）" VerticalAlignment="Center" />
             </StackPanel>
 
             <TextBlock Grid.Row="7" Style="{StaticResource Label}" Text="クリック" />
