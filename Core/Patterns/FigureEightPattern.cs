@@ -1,6 +1,9 @@
 namespace DishAuto.Core.Patterns;
 
-/// <summary>8の字を描く。1周ごとに少しずつ小さくして中心まで行き、また大きくしていく。</summary>
+/// <summary>
+/// 横の8の字と縦の8の字を交互に描く。横→縦を1組として、組ごとに少しずつ小さくして
+/// 中心まで行き、また大きくしていく。どちらの8の字も中心から始まり中心で終わるので、つなぎ目は滑らか。
+/// </summary>
 public sealed class FigureEightPattern : IPathPattern
 {
     private const int PointsPerLap = 120;
@@ -13,13 +16,20 @@ public sealed class FigureEightPattern : IPathPattern
 
         foreach (double s in scales)
         {
-            for (int i = 0; i < PointsPerLap; i++)
-            {
-                double t = 2 * Math.PI * i / PointsPerLap;
-                yield return region.Clamp(new PointD(
-                    region.Cx + s * region.Rx * Math.Sin(t),
-                    region.Cy + s * region.Ry * Math.Sin(2 * t)));
-            }
+            foreach (var p in Lap(region, s, vertical: false)) yield return p;
+            foreach (var p in Lap(region, s, vertical: true)) yield return p;
+        }
+    }
+
+    private static IEnumerable<PointD> Lap(Region region, double scale, bool vertical)
+    {
+        for (int i = 0; i < PointsPerLap; i++)
+        {
+            double t = 2 * Math.PI * i / PointsPerLap;
+            double a = Math.Sin(t), b = Math.Sin(2 * t);
+            // 横: 左右に輪が並ぶ ∞、縦: 上下に輪が並ぶ 8
+            var (x, y) = vertical ? (b, a) : (a, b);
+            yield return region.Clamp(new PointD(region.Cx + scale * region.Rx * x, region.Cy + scale * region.Ry * y));
         }
     }
 }
