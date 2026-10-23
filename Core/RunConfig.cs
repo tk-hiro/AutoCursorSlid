@@ -6,6 +6,7 @@ public sealed record RunConfig(
     PatternKind Pattern,
     MoveMode MoveMode,
     bool HoldLeftButton,
+    ClickMethod ClickMethod,
     bool KeepPressed,
     double SpeedPxPerSec,
     double Spacing,

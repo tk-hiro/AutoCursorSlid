@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:core="clr-namespace:DishAuto.Core"
-        Title="皿洗いオート" Width="470" SizeToContent="Height"
+        Title="{Binding Title}" Width="470" SizeToContent="Height"
         ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen"
         FontFamily="Yu Gothic UI" FontSize="13">
     <Window.Resources>
@@ -45,6 +45,9 @@
                 <Button Grid.Column="2" Height="36" Click="Stop_Click" IsEnabled="{Binding IsRunning}"
                         Content="停止 (F10 / Esc)" />
             </Grid>
+            <Button Margin="0,8,0,0" Height="28" Click="RestartAsAdmin_Click"
+                    Visibility="{Binding RestartAsAdminVisibility}"
+                    Content="管理者として再起動（ゲームでクリックが効かない場合）" />
             <Border Margin="0,10,0,0" Padding="8,6" Background="#FFF3F3F3" CornerRadius="4">
                 <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
             </Border>
@@ -120,6 +123,9 @@
                 <CheckBox Margin="0,2" Content="左クリックを押したまま動かす" IsChecked="{Binding Settings.HoldLeftButton}" />
                 <CheckBox Margin="0,2" Content="押した状態を送り続ける（クリックが外れる場合）"
                           IsChecked="{Binding Settings.KeepPressed}" IsEnabled="{Binding Settings.HoldLeftButton}" />
+                <ComboBox Margin="0,2" HorizontalAlignment="Left" ToolTip="クリックの送り方"
+                          ItemsSource="{x:Static core:Options.ClickMethods}" SelectedValue="{Binding Settings.ClickMethod}"
+                          IsEnabled="{Binding Settings.HoldLeftButton}" />
             </StackPanel>
 
             <TextBlock Grid.Row="8" Style="{StaticResource Label}" Text="押し直し" />

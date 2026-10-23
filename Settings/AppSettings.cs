@@ -12,6 +12,7 @@ public sealed class AppSettings : ObservableObject
     private MoveMode _moveMode = MoveMode.Absolute;
     private bool _holdLeftButton = true;
     private bool _keepPressed = true;
+    private ClickMethod _clickMethod = ClickMethod.SendInput;
     private double _speedPxPerSec = 3000;
     private int _spacing = 20;
     private bool _detergentEnabled = true;
@@ -31,6 +32,7 @@ public sealed class AppSettings : ObservableObject
     public PatternKind Pattern { get => _pattern; set => SetField(ref _pattern, value); }
     public MoveMode MoveMode { get => _moveMode; set => SetField(ref _moveMode, value); }
     public bool HoldLeftButton { get => _holdLeftButton; set => SetField(ref _holdLeftButton, value); }
+    public ClickMethod ClickMethod { get => _clickMethod; set => SetField(ref _clickMethod, value); }
     public bool KeepPressed { get => _keepPressed; set => SetField(ref _keepPressed, value); }
     public double SpeedPxPerSec { get => _speedPxPerSec; set => SetField(ref _speedPxPerSec, Math.Round(value)); }
     public int Spacing { get => _spacing; set => SetField(ref _spacing, value); }
@@ -59,6 +61,7 @@ public sealed class AppSettings : ObservableObject
         Pattern: Pattern,
         MoveMode: MoveMode,
         HoldLeftButton: HoldLeftButton,
+        ClickMethod: ClickMethod,
         KeepPressed: KeepPressed,
         SpeedPxPerSec: Math.Clamp(SpeedPxPerSec, 50, 30000),
         Spacing: Math.Clamp(Spacing, 3, 500),

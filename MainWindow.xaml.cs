@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using DishAuto.Core;
 using DishAuto.Native;
@@ -53,6 +54,22 @@ public partial class MainWindow : Window
             Show();
             Activate();
         }
+    }
+
+    private void RestartAsAdmin_Click(object sender, RoutedEventArgs e)
+    {
+        if (Environment.ProcessPath is not { } exe) return;
+        SettingsStore.Save(_vm.Settings);
+        try
+        {
+            Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true, Verb = "runas" });
+        }
+        catch (Win32Exception)
+        {
+            // UAC の確認でキャンセルされた
+            return;
+        }
+        Close();
     }
 
     private void Start_Click(object sender, RoutedEventArgs e) => _ = StartAsync(fromHotkey: false);

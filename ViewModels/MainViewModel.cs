@@ -1,3 +1,5 @@
+using System.Windows;
+using DishAuto.Native;
 using DishAuto.Settings;
 
 namespace DishAuto.ViewModels;
@@ -32,6 +34,12 @@ public sealed class MainViewModel : ObservableObject
     }
 
     public bool IsIdle => !IsRunning;
+
+    public bool IsElevated { get; } = ProcessInfo.IsCurrentProcessElevated();
+
+    public string Title => IsElevated ? "皿洗いオート（管理者）" : "皿洗いオート";
+
+    public Visibility RestartAsAdminVisibility => IsElevated ? Visibility.Collapsed : Visibility.Visible;
 
     public string RegionText
     {

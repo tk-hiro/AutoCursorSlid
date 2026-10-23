@@ -21,6 +21,12 @@ public enum MoveMode
     Relative,
 }
 
+public enum ClickMethod
+{
+    SendInput,
+    WindowMessage,
+}
+
 public enum StopReason
 {
     UserStop,
@@ -28,6 +34,8 @@ public enum StopReason
     TimeUp,
     FocusChanged,
     MouseMoved,
+    TargetElevated,
+    RegionCovered,
 }
 
 public static class StopReasonExtensions
@@ -39,6 +47,8 @@ public static class StopReasonExtensions
         StopReason.TimeUp => "制限時間に達したので停止しました",
         StopReason.FocusChanged => "前面のウィンドウが切り替わったので停止しました",
         StopReason.MouseMoved => "マウスが手で動かされたので停止しました",
+        StopReason.TargetElevated => "ゲームが管理者権限で動いているため、クリックを送れません。「管理者として再起動」を押してから、もう一度開始してください",
+        StopReason.RegionCovered => "このウィンドウが範囲に重なっています。ウィンドウを移動するか「実行中はこのウィンドウを最小化」をオンにしてください",
         _ => reason.ToString(),
     };
 }
@@ -61,6 +71,12 @@ public static class Options
         new(PatternKind.Spiral, "渦巻き"),
         new(PatternKind.Random, "ランダム"),
         new(PatternKind.CircleScrub, "円を描いて擦る"),
+    ];
+
+    public static IReadOnlyList<Option<ClickMethod>> ClickMethods { get; } =
+    [
+        new(ClickMethod.SendInput, "標準（SendInput）"),
+        new(ClickMethod.WindowMessage, "ウィンドウメッセージ（標準で反応しない場合）"),
     ];
 
     public static IReadOnlyList<Option<MoveMode>> MoveModes { get; } =

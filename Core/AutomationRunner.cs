@@ -19,7 +19,7 @@ public sealed class AutomationRunner(RunConfig config)
     private const double ForegroundCaptureDelayMs = 150.0;
     private const double StatusIntervalMs = 250.0;
 
-    private readonly InputSender _input = new(config.MoveMode);
+    private readonly InputSender _input = new(config.MoveMode, config.ClickMethod);
     private readonly Stopwatch _clock = new();
     private CancellationToken _ct;
     private IProgress<string>? _progress;
@@ -51,7 +51,8 @@ public sealed class AutomationRunner(RunConfig config)
             Thread.Sleep(10);
             if (config.HoldLeftButton)
             {
-                InputSender.LeftDown();
+                if (PrepareTarget(current) is { } problem) return problem;
+                _input.LeftDown();
                 if (config.RepressIntervalSec > 0)
                     _nextRepressMs = config.RepressIntervalSec * 1000;
                 if (config.KeepPressed)
@@ -93,6 +94,34 @@ public sealed class AutomationRunner(RunConfig config)
                 shown = remain;
             }
             Thread.Sleep(20);
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 開始点の下にあるゲームウィンドウを確認し、クリックが届く状態にする。
+    /// </summary>
+    private StopReason? PrepareTarget(PointD start)
+    {
+        nint window = ProcessInfo.TopLevelWindowAt((int)Math.Round(start.X), (int)Math.Round(start.Y));
+        if (window == 0) return null;
+
+        NativeMethods.GetWindowThreadProcessId(window, out uint pid);
+        if (pid == Environment.ProcessId) return StopReason.RegionCovered;
+
+        // 管理者権限のウィンドウには、こちらも管理者でないとクリックが届かない
+        if (ProcessInfo.IsWindowElevated(window) == true && !ProcessInfo.IsCurrentProcessElevated())
+            return StopReason.TargetElevated;
+
+        if (config.ClickMethod == ClickMethod.WindowMessage)
+        {
+            _input.AttachToWindowAt(start);
+        }
+        else if (NativeMethods.GetForegroundWindow() != window)
+        {
+            // 前面でないウィンドウは最初のクリックを前面化に使うことがあるため、先に一度クリックしておく
+            InputSender.Click();
+            Thread.Sleep(80);
         }
         return null;
     }
@@ -189,15 +218,15 @@ public sealed class AutomationRunner(RunConfig config)
 
         if (now >= _nextRepressMs)
         {
-            InputSender.LeftUp();
+            _input.LeftUp();
             Thread.Sleep(RepressGapMs);
-            InputSender.LeftDown();
+            _input.LeftDown();
             _nextRepressMs = now + config.RepressIntervalSec * 1000;
         }
         else if (now >= _nextKeepPressedMs)
         {
             // ゲーム側で押下が外れたと判定されても、押した状態に戻す
-            InputSender.LeftDown();
+            _input.LeftDown();
             _nextKeepPressedMs = now + KeepPressedIntervalMs;
         }
 
