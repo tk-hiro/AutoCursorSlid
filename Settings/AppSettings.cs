@@ -11,13 +11,14 @@ public sealed class AppSettings : ObservableObject
     private PatternKind _pattern = PatternKind.ZigzagHorizontal;
     private MoveMode _moveMode = MoveMode.Absolute;
     private bool _holdLeftButton = true;
-    private double _speedPxPerSec = 1500;
+    private bool _keepPressed = true;
+    private double _speedPxPerSec = 3000;
     private int _spacing = 20;
     private bool _detergentEnabled = true;
     private double _detergentIntervalSec = 5.0;
     private double _repressIntervalSec;
     private int _timeLimitSec = 60;
-    private int _countdownSec = 3;
+    private int _countdownSec = 2;
     private bool _stopOnUserMouse = true;
     private bool _stopOnFocusChange = true;
     private bool _minimizeWhileRunning = true;
@@ -30,6 +31,7 @@ public sealed class AppSettings : ObservableObject
     public PatternKind Pattern { get => _pattern; set => SetField(ref _pattern, value); }
     public MoveMode MoveMode { get => _moveMode; set => SetField(ref _moveMode, value); }
     public bool HoldLeftButton { get => _holdLeftButton; set => SetField(ref _holdLeftButton, value); }
+    public bool KeepPressed { get => _keepPressed; set => SetField(ref _keepPressed, value); }
     public double SpeedPxPerSec { get => _speedPxPerSec; set => SetField(ref _speedPxPerSec, Math.Round(value)); }
     public int Spacing { get => _spacing; set => SetField(ref _spacing, value); }
     public bool DetergentEnabled { get => _detergentEnabled; set => SetField(ref _detergentEnabled, value); }
@@ -57,7 +59,8 @@ public sealed class AppSettings : ObservableObject
         Pattern: Pattern,
         MoveMode: MoveMode,
         HoldLeftButton: HoldLeftButton,
-        SpeedPxPerSec: Math.Clamp(SpeedPxPerSec, 50, 20000),
+        KeepPressed: KeepPressed,
+        SpeedPxPerSec: Math.Clamp(SpeedPxPerSec, 50, 30000),
         Spacing: Math.Clamp(Spacing, 3, 500),
         DetergentEnabled: DetergentEnabled,
         DetergentIntervalSec: Math.Max(0.2, DetergentIntervalSec),

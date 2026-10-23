@@ -89,7 +89,7 @@
 
             <TextBlock Grid.Row="3" Style="{StaticResource Label}" Text="移動速度" />
             <StackPanel Grid.Row="3" Grid.Column="1">
-                <Slider Width="160" Minimum="100" Maximum="5000" SmallChange="50" LargeChange="500"
+                <Slider Width="160" Minimum="100" Maximum="10000" SmallChange="100" LargeChange="1000"
                         VerticalAlignment="Center" Margin="0,0,8,0"
                         Value="{Binding Settings.SpeedPxPerSec}" />
                 <TextBox Text="{Binding Settings.SpeedPxPerSec, UpdateSourceTrigger=PropertyChanged}" />
@@ -116,8 +116,10 @@
             </StackPanel>
 
             <TextBlock Grid.Row="7" Style="{StaticResource Label}" Text="クリック" />
-            <StackPanel Grid.Row="7" Grid.Column="1">
-                <CheckBox Content="左クリックを押したまま動かす" IsChecked="{Binding Settings.HoldLeftButton}" />
+            <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Vertical">
+                <CheckBox Margin="0,2" Content="左クリックを押したまま動かす" IsChecked="{Binding Settings.HoldLeftButton}" />
+                <CheckBox Margin="0,2" Content="押した状態を送り続ける（クリックが外れる場合）"
+                          IsChecked="{Binding Settings.KeepPressed}" IsEnabled="{Binding Settings.HoldLeftButton}" />
             </StackPanel>
 
             <TextBlock Grid.Row="8" Style="{StaticResource Label}" Text="押し直し" />
@@ -135,7 +137,7 @@
             <TextBlock Grid.Row="10" Style="{StaticResource Label}" Text="開始待ち" />
             <StackPanel Grid.Row="10" Grid.Column="1">
                 <TextBox Text="{Binding Settings.CountdownSec, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Text="秒（この間にゲーム画面を前面に）" VerticalAlignment="Center" />
+                <TextBlock Text="秒（ボタンで開始したとき。F9 はすぐ開始）" VerticalAlignment="Center" />
             </StackPanel>
 
             <TextBlock Grid.Row="11" Style="{StaticResource Label}" Text="安全" VerticalAlignment="Top" Margin="0,6,12,0" />

@@ -10,10 +10,13 @@ namespace DishAuto.Core;
 /// </summary>
 public sealed class AutomationRunner(RunConfig config)
 {
-    private const double StepPx = 3.0;                 // 1回の移動量。大きすぎると擦った判定にならない
+    private const double TickMs = 1.0;                 // 入力を送る間隔の目安
+    private const double MaxCatchUpMs = 20.0;          // 処理が遅れたときに早送りで取り戻す上限
     private const double MouseMovedThresholdPx = 60.0; // これ以上ずれたら手で動かされたとみなす
     private const double SpaceHoldMs = 50.0;
     private const int RepressGapMs = 30;
+    private const double KeepPressedIntervalMs = 100.0;
+    private const double ForegroundCaptureDelayMs = 150.0;
     private const double StatusIntervalMs = 250.0;
 
     private readonly InputSender _input = new(config.MoveMode);
@@ -22,9 +25,11 @@ public sealed class AutomationRunner(RunConfig config)
     private IProgress<string>? _progress;
     private nint _foreground;
     private PointD _lastSent;
+    private double _segmentStartMs;
     private double _nextDetergentMs;
     private double _spaceReleaseMs = -1;
     private double _nextRepressMs = double.MaxValue;
+    private double _nextKeepPressedMs = double.MaxValue;
     private double _nextStatusMs;
 
     public StopReason Run(CancellationToken ct, IProgress<string>? progress)
@@ -43,23 +48,23 @@ public sealed class AutomationRunner(RunConfig config)
             // 押す前に開始点へ移動しておく（範囲外からドラッグしないように）
             _input.MoveTo(current);
             _lastSent = current;
-            Thread.Sleep(30);
+            Thread.Sleep(10);
             if (config.HoldLeftButton)
+            {
                 InputSender.LeftDown();
-
-            // クリックでゲームが前面になるのを待ってから前面ウィンドウを記録する
-            Thread.Sleep(100);
-            _foreground = NativeMethods.GetForegroundWindow();
+                if (config.RepressIntervalSec > 0)
+                    _nextRepressMs = config.RepressIntervalSec * 1000;
+                if (config.KeepPressed)
+                    _nextKeepPressedMs = KeepPressedIntervalMs;
+            }
 
             _clock.Start();
             _nextDetergentMs = 0;
-            if (config.HoldLeftButton && config.RepressIntervalSec > 0)
-                _nextRepressMs = config.RepressIntervalSec * 1000;
 
             while (path.MoveNext())
             {
                 var target = path.Current;
-                if (MoveSmoothly(current, target) is { } reason) return reason;
+                if (MoveAlong(current, target) is { } reason) return reason;
                 current = target;
             }
             return StopReason.UserStop;
@@ -108,34 +113,55 @@ public sealed class AutomationRunner(RunConfig config)
         }
     }
 
-    /// <summary>from から to へ、速度設定に合わせて少しずつ動かす。</summary>
-    private StopReason? MoveSmoothly(PointD from, PointD to)
+    /// <summary>
+    /// from から to へ動かす。位置は経過時間から決めるので、
+    /// 入力の送信が遅れても設定どおりの速度になる。
+    /// </summary>
+    private StopReason? MoveAlong(PointD from, PointD to)
     {
-        double distance = PointD.Distance(from, to);
-        int steps = Math.Max(1, (int)Math.Ceiling(distance / StepPx));
-        double stepMs = distance / config.SpeedPxPerSec * 1000.0 / steps;
-        double startMs = _clock.Elapsed.TotalMilliseconds;
+        double durationMs = PointD.Distance(from, to) / config.SpeedPxPerSec * 1000.0;
+        double startMs = Math.Max(_segmentStartMs, _clock.Elapsed.TotalMilliseconds - MaxCatchUpMs);
+        double endMs = startMs + durationMs;
+        _segmentStartMs = endMs;
 
-        for (int i = 1; i <= steps; i++)
+        while (true)
         {
             if (CheckStop() is { } reason) return reason;
 
-            var p = PointD.Lerp(from, to, (double)i / steps);
+            double now = _clock.Elapsed.TotalMilliseconds;
+            double t = durationMs <= 0 ? 1.0 : Math.Min(1.0, (now - startMs) / durationMs);
+            var p = PointD.Lerp(from, to, t);
             _input.MoveTo(p);
             _lastSent = p;
 
             Tick();
-            WaitUntil(startMs + stepMs * i);
+            if (t >= 1.0) return null;
+            WaitUntil(Math.Min(endMs, now + TickMs));
         }
-        return null;
     }
 
     private StopReason? CheckStop()
     {
         if (_ct.IsCancellationRequested) return StopReason.UserStop;
         if (InputSender.IsEscPressed()) return StopReason.EscKey;
-        if (config.TimeLimitSec > 0 && _clock.Elapsed.TotalSeconds >= config.TimeLimitSec) return StopReason.TimeUp;
-        if (config.StopOnFocusChange && NativeMethods.GetForegroundWindow() != _foreground) return StopReason.FocusChanged;
+
+        double now = _clock.Elapsed.TotalMilliseconds;
+        if (config.TimeLimitSec > 0 && now >= config.TimeLimitSec * 1000.0) return StopReason.TimeUp;
+
+        if (config.StopOnFocusChange)
+        {
+            // クリックでゲームが前面になるのを少し待ってから、前面ウィンドウを記録する
+            if (_foreground == 0)
+            {
+                if (now >= ForegroundCaptureDelayMs)
+                    _foreground = NativeMethods.GetForegroundWindow();
+            }
+            else if (NativeMethods.GetForegroundWindow() != _foreground)
+            {
+                return StopReason.FocusChanged;
+            }
+        }
+
         if (config.StopOnUserMouse && PointD.Distance(InputSender.GetCursor(), _lastSent) > MouseMovedThresholdPx)
             return StopReason.MouseMoved;
         return null;
@@ -168,6 +194,12 @@ public sealed class AutomationRunner(RunConfig config)
             InputSender.LeftDown();
             _nextRepressMs = now + config.RepressIntervalSec * 1000;
         }
+        else if (now >= _nextKeepPressedMs)
+        {
+            // ゲーム側で押下が外れたと判定されても、押した状態に戻す
+            InputSender.LeftDown();
+            _nextKeepPressedMs = now + KeepPressedIntervalMs;
+        }
 
         if (now >= _nextStatusMs)
         {
@@ -192,8 +224,8 @@ public sealed class AutomationRunner(RunConfig config)
         {
             double remain = targetMs - _clock.Elapsed.TotalMilliseconds;
             if (remain <= 0) return;
-            if (remain > 2) Thread.Sleep(1);
-            else Thread.SpinWait(50);
+            if (remain > 1.5) Thread.Sleep(1);
+            else Thread.SpinWait(20);
         }
     }
 }

@@ -27,7 +27,7 @@ public partial class MainWindow : Window
         _hotkeys = new HotkeyManager(this);
 
         var failed = new List<string>();
-        if (!_hotkeys.Register(0, NativeMethods.VK_F9, () => _ = StartAsync())) failed.Add("F9");
+        if (!_hotkeys.Register(0, NativeMethods.VK_F9, () => _ = StartAsync(fromHotkey: true))) failed.Add("F9");
         if (!_hotkeys.Register(0, NativeMethods.VK_F10, Stop)) failed.Add("F10");
         if (failed.Count > 0)
             _vm.Status = $"{string.Join(", ", failed)} のホットキー登録に失敗しました（他のアプリが使用中）。ボタンで操作してください。";
@@ -55,15 +55,17 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Start_Click(object sender, RoutedEventArgs e) => _ = StartAsync();
+    private void Start_Click(object sender, RoutedEventArgs e) => _ = StartAsync(fromHotkey: false);
 
     private void Stop_Click(object sender, RoutedEventArgs e) => Stop();
 
-    private async Task StartAsync()
+    private async Task StartAsync(bool fromHotkey)
     {
         if (_vm.IsRunning) return;
 
+        // F9 はゲームが前面のまま押せるので、待たずにすぐ始める
         var config = _vm.Settings.ToRunConfig();
+        if (fromHotkey) config = config with { CountdownSec = 0 };
         if (!config.Region.IsValid)
         {
             _vm.Status = "先に「範囲を選択…」で範囲を指定してください。";
