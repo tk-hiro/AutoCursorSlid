@@ -5,7 +5,7 @@ using DishAuto.Native;
 namespace DishAuto.Core;
 
 /// <summary>
-/// 左ボタンを押したまま範囲内をパターンに沿って動かし、一定間隔でスペースを押す。
+/// 範囲内をパターンに沿って動かし（設定により左ボタンを押したまま）、一定間隔でスペースを押す。
 /// 専用スレッドで <see cref="Run"/> を呼び出すこと。
 /// </summary>
 public sealed class AutomationRunner(RunConfig config)
@@ -44,7 +44,8 @@ public sealed class AutomationRunner(RunConfig config)
             _input.MoveTo(current);
             _lastSent = current;
             Thread.Sleep(30);
-            InputSender.LeftDown();
+            if (config.HoldLeftButton)
+                InputSender.LeftDown();
 
             // クリックでゲームが前面になるのを待ってから前面ウィンドウを記録する
             Thread.Sleep(100);
@@ -52,7 +53,7 @@ public sealed class AutomationRunner(RunConfig config)
 
             _clock.Start();
             _nextDetergentMs = 0;
-            if (config.RepressIntervalSec > 0)
+            if (config.HoldLeftButton && config.RepressIntervalSec > 0)
                 _nextRepressMs = config.RepressIntervalSec * 1000;
 
             while (path.MoveNext())

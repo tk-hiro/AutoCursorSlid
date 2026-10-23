@@ -68,6 +68,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Style="{StaticResource Label}" Text="範囲" />
@@ -114,26 +115,31 @@
                 <TextBlock Text="秒ごと" VerticalAlignment="Center" />
             </StackPanel>
 
-            <TextBlock Grid.Row="7" Style="{StaticResource Label}" Text="押し直し" />
+            <TextBlock Grid.Row="7" Style="{StaticResource Label}" Text="クリック" />
             <StackPanel Grid.Row="7" Grid.Column="1">
+                <CheckBox Content="左クリックを押したまま動かす" IsChecked="{Binding Settings.HoldLeftButton}" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="8" Style="{StaticResource Label}" Text="押し直し" />
+            <StackPanel Grid.Row="8" Grid.Column="1" IsEnabled="{Binding Settings.HoldLeftButton}">
                 <TextBox Text="{Binding Settings.RepressIntervalSec, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Text="秒ごとに左ボタンを押し直す（0 = しない）" VerticalAlignment="Center" />
             </StackPanel>
 
-            <TextBlock Grid.Row="8" Style="{StaticResource Label}" Text="制限時間" />
-            <StackPanel Grid.Row="8" Grid.Column="1">
+            <TextBlock Grid.Row="9" Style="{StaticResource Label}" Text="制限時間" />
+            <StackPanel Grid.Row="9" Grid.Column="1">
                 <TextBox Text="{Binding Settings.TimeLimitSec, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Text="秒（0 = 無制限）" VerticalAlignment="Center" />
             </StackPanel>
 
-            <TextBlock Grid.Row="9" Style="{StaticResource Label}" Text="開始待ち" />
-            <StackPanel Grid.Row="9" Grid.Column="1">
+            <TextBlock Grid.Row="10" Style="{StaticResource Label}" Text="開始待ち" />
+            <StackPanel Grid.Row="10" Grid.Column="1">
                 <TextBox Text="{Binding Settings.CountdownSec, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Text="秒（この間にゲーム画面を前面に）" VerticalAlignment="Center" />
             </StackPanel>
 
-            <TextBlock Grid.Row="10" Style="{StaticResource Label}" Text="安全" VerticalAlignment="Top" Margin="0,6,12,0" />
-            <StackPanel Grid.Row="10" Grid.Column="1" Orientation="Vertical">
+            <TextBlock Grid.Row="11" Style="{StaticResource Label}" Text="安全" VerticalAlignment="Top" Margin="0,6,12,0" />
+            <StackPanel Grid.Row="11" Grid.Column="1" Orientation="Vertical">
                 <CheckBox Margin="0,2" Content="マウスを手で動かしたら停止" IsChecked="{Binding Settings.StopOnUserMouse}" />
                 <CheckBox Margin="0,2" Content="前面のウィンドウが変わったら停止" IsChecked="{Binding Settings.StopOnFocusChange}" />
                 <CheckBox Margin="0,2" Content="実行中はこのウィンドウを最小化" IsChecked="{Binding Settings.MinimizeWhileRunning}" />

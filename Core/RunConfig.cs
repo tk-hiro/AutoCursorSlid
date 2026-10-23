@@ -5,6 +5,7 @@ public sealed record RunConfig(
     Region Region,
     PatternKind Pattern,
     MoveMode MoveMode,
+    bool HoldLeftButton,
     double SpeedPxPerSec,
     double Spacing,
     bool DetergentEnabled,

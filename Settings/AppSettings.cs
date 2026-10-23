@@ -10,6 +10,7 @@ public sealed class AppSettings : ObservableObject
     private RegionShape _shape = RegionShape.Ellipse;
     private PatternKind _pattern = PatternKind.ZigzagHorizontal;
     private MoveMode _moveMode = MoveMode.Absolute;
+    private bool _holdLeftButton = true;
     private double _speedPxPerSec = 1500;
     private int _spacing = 20;
     private bool _detergentEnabled = true;
@@ -28,6 +29,7 @@ public sealed class AppSettings : ObservableObject
     public RegionShape Shape { get => _shape; set => SetField(ref _shape, value); }
     public PatternKind Pattern { get => _pattern; set => SetField(ref _pattern, value); }
     public MoveMode MoveMode { get => _moveMode; set => SetField(ref _moveMode, value); }
+    public bool HoldLeftButton { get => _holdLeftButton; set => SetField(ref _holdLeftButton, value); }
     public double SpeedPxPerSec { get => _speedPxPerSec; set => SetField(ref _speedPxPerSec, Math.Round(value)); }
     public int Spacing { get => _spacing; set => SetField(ref _spacing, value); }
     public bool DetergentEnabled { get => _detergentEnabled; set => SetField(ref _detergentEnabled, value); }
@@ -54,6 +56,7 @@ public sealed class AppSettings : ObservableObject
         Region: ToRegion(),
         Pattern: Pattern,
         MoveMode: MoveMode,
+        HoldLeftButton: HoldLeftButton,
         SpeedPxPerSec: Math.Clamp(SpeedPxPerSec, 50, 20000),
         Spacing: Math.Clamp(Spacing, 3, 500),
         DetergentEnabled: DetergentEnabled,
