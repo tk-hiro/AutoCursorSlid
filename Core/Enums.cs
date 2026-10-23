@@ -11,6 +11,9 @@ public enum PatternKind
     ZigzagHorizontal,
     ZigzagVertical,
     Spiral,
+    Concentric,
+    FigureEight,
+    Radial,
     Random,
     CircleScrub,
 }
@@ -68,7 +71,10 @@ public static class Options
     [
         new(PatternKind.ZigzagHorizontal, "ジグザグ（横）"),
         new(PatternKind.ZigzagVertical, "ジグザグ（縦）"),
-        new(PatternKind.Spiral, "渦巻き"),
+        new(PatternKind.Spiral, "渦巻き（外→内→外）"),
+        new(PatternKind.Concentric, "同心円（外→内→外）"),
+        new(PatternKind.FigureEight, "8の字"),
+        new(PatternKind.Radial, "放射状（中心⇔外側）"),
         new(PatternKind.Random, "ランダム"),
         new(PatternKind.CircleScrub, "円を描いて擦る"),
     ];
